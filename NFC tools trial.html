@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accessible NFC Website</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            text-align: center;
+            max-width: 600px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .nfc-status {
+            margin-top: 20px;
+            padding: 10px;
+            background: #e0f7fa;
+            border: 1px solid #00acc1;
+            border-radius: 5px;
+            color: #006064;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:focus {
+            outline: 2px solid #ffeb3b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" role="main">
+        <h1>Accessible NFC Interaction</h1>
+        <p>This website is designed to assist blind and visually impaired users with NFC-enabled tools.</p>
+        <button id="nfc-button">Activate NFC</button>
+        <div id="nfc-status" class="nfc-status" aria-live="polite">NFC is not active.</div>
+    </div>
+
+    <script>
+        // Check for NFC support
+        const nfcButton = document.getElementById('nfc-button');
+        const nfcStatus = document.getElementById('nfc-status');
+
+        if ('NDEFReader' in window) {
+            nfcButton.addEventListener('click', async () => {
+                try {
+                    const ndef = new NDEFReader();
+                    await ndef.scan();
+                    nfcStatus.textContent = 'NFC scan started. Please tap an NFC tag.';
+
+                    ndef.addEventListener('reading', event => {
+                        const decoder = new TextDecoder();
+                        let message = '';
+                        for (const record of event.message.records) {
+                            message += decoder.decode(record.data) + ' ';
+                        }
+                        nfcStatus.textContent = `NFC Data: ${message}`;
+                    });
+
+                    ndef.addEventListener('readingerror', () => {
+                        nfcStatus.textContent = 'Failed to read NFC tag. Please try again.';
+                    });
+                } catch (error) {
+                    nfcStatus.textContent = `Error: ${error.message}`;
+                }
+            });
+        } else {
+            nfcStatus.textContent = 'NFC is not supported on this device.';
+            nfcButton.disabled = true;
+        }
+    </script>
+</body>
+</html>
+
+
+
