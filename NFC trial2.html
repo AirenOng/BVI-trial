@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accessible NFC Website</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .screen-reader-text {
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+        }
+        button {
+            padding: 15px 20px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        button:focus {
+            outline: 2px solid #0056b3;
+        }
+        .message {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Accessible NFC Website</h1>
+        <p>This website is designed for blind and visually impaired users. Please use the NFC device to interact with the website functionality.</p>
+        
+        <button id="readNFC">Read NFC Tag</button>
+        <p id="nfcMessage" class="message">Awaiting NFC interaction...</p>
+    </div>
+
+    <script>
+        if ('NDEFReader' in window) {
+            const button = document.getElementById('readNFC');
+            const message = document.getElementById('nfcMessage');
+
+            button.addEventListener('click', async () => {
+                try {
+                    const ndef = new NDEFReader();
+                    await ndef.scan();
+                    
+                    message.textContent = "Hold your NFC tag close to the reader...";
+
+                    ndef.onreading = event => {
+                        const decoder = new TextDecoder();
+                        const nfcData = Array.from(event.message.records)
+                            .map(record => decoder.decode(record.data))
+                            .join(', ');
+
+                        message.textContent = `NFC Data Received: ${nfcData}`;
+                    };
+                } catch (error) {
+                    message.textContent = `Error: ${error.message}`;
+                }
+            });
+        } else {
+            document.getElementById('nfcMessage').textContent = 'NFC is not supported on this device/browser.';
+        }
+    </script>
+</body>
+</html>
